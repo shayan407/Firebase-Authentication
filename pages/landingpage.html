@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/toastify-js"
+    ></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap");
+
+      html,
+      body {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-image: url("../wp7563482.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        margin: 0;
+        font-family: poppins;
+      }
+
+      #main {
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+        animation: fadeIn 0.5s ease-out;
+        max-width: 500px;
+      }
+      .lo{
+        cursor: pointer;
+        color: rgba(0, 0, 180, 0.887);
+        text-decoration: underline;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <h1>Under Construction</h1>
+      <a href="../signuppage/signup.html">SignUp</a>
+      <a href="../index.html">LogIn</a>
+      <p id="btn" class="lo">LogOut</p>
+    </div>
+
+    <script type="module">
+      import {
+        auth,
+        createUserWithEmailAndPassword,
+        onAuthStateChanged,
+        signOut
+      } from "../firebase.js";
+      let button = document.getElementById("btn");
+
+      button.addEventListener("click", function LogOut() {
+        signOut(auth)
+          .then(() => {
+            Toastify({
+              text: 'SignedOut Succesfully',
+              duration: 3000,
+            }).showToast();
+            onAuthStateChanged(auth, (user) => {
+              if (!user) {
+                window.location.href = '../index.html'
+              }
+            });
+          })
+          .catch((error) => {
+            Toastify({
+              text: error,
+              duration: 3000,
+            }).showToast();
+          });
+      });
+
+    </script>
+    <script src="../firebase.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LogIn</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/toastify-js"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      html,
+      body {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-image: url("./wp7563482.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        margin: 0;
+      }
+
+      #main {
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+        animation: fadeIn 0.5s ease-out;
+        max-width: 400px;
+      }
+
+      .h1 {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #003366;
+      }
+
+      .data {
+        position: relative;
+        margin-top: 20px;
+        width: 100%;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 3px;
+        border: none;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.3s ease;
+        background: transparent;
+        font-size: 16px;
+        outline: none;
+      }
+
+      input:focus,
+      input:not(:placeholder-shown) {
+        border-bottom-color: #003366;
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      button {
+        outline: none;
+        border: none;
+        border-radius: 6px;
+        padding: 12px 24px;
+        background-color: #003366;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background-color 0.3s ease;
+      }
+      /* a {
+    pointer-events:none;
+} */
+      button:hover {
+        background-color: #003366de;
+      }
+
+      button:active {
+        background-color: #003366ba;
+      }
+      .fp{
+        cursor: pointer;
+        text-decoration: underline;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <div class="h1">
+        <h1>Login</h1>
+      </div>
+      <div class="data">
+        <input
+          id="email"
+          type="email"
+          required
+          autocomplete="off"
+          placeholder="Email"
+        />
+      </div>
+      <div class="data">
+        <input
+          id="password"
+          type="password"
+          required
+          autocomplete="off"
+          placeholder="Password"
+        />
+      </div>
+      <div class="data" style="display: flex; align-items: center; gap: 100px">
+        <button id="btn">login</button>
+        <p style="text-align: right; margin-top: 20px">
+          Not Registered?<br /><a href="./signuppage/signup.html">Signup</a>
+        </p>
+      </div>
+      <p id="fPass" class="fp">Forgot Password</p>
+    </div>
+
+    <script type="module">
+      import {
+        auth,
+        signInWithEmailAndPassword,
+        onAuthStateChanged,
+        sendPasswordResetEmail
+      } from "./firebase.js";
+
+      let button = document.getElementById("btn");
+      let fPass = document.getElementById("fPass");
+      let inputs = document.getElementsByTagName("input");
+
+      button.addEventListener("click", function logIn() {
+        let email = document.getElementById("email").value;
+        let pass = document.getElementById("password").value;
+
+        button.innerText = `Loading...`;
+        signInWithEmailAndPassword(auth, email, pass)
+          .then((userCredential) => {
+            // Signed up
+            button.innerText = `LogIn`;
+            const user = userCredential.user;
+            Toastify({
+              text: "LoggedIn Succesfully",
+              duration: 3000,
+            }).showToast();
+            onAuthStateChanged(auth, (user) => {
+              if (user) {
+                window.location.href = "../pages/landingpage.html";
+              }
+            });
+            // ...
+          })
+          .catch((error) => {
+            button.innerText = `LogIn`;
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            Toastify({
+              text: error,
+              duration: 3000,
+            }).showToast();
+            // ..
+          });
+      });
+
+
+      fPass.addEventListener("click", function ResetPass() {
+        let email = document.getElementById("email").value;
+        let pass = document.getElementById("password").value;
+
+        sendPasswordResetEmail(auth, email)
+          .then(() => {
+            Toastify({
+              text: 'Email Sent!',
+              duration: 3000,
+            }).showToast();
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            
+            Toastify({
+              text: error.message,
+              duration: 3000,
+            }).showToast();
+          });
+      });
+    </script>
+    <script src="./firebase.js" type="module"></script>
+  </body>
+</html>
