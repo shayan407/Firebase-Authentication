@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
     <link
       rel="stylesheet"
       type="text/css"
@@ -13,82 +14,136 @@
       type="text/javascript"
       src="https://cdn.jsdelivr.net/npm/toastify-js"
     ></script>
-    <style>
-      @import url("https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap");
-
-      html,
-      body {
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-image: url("../wp7563482.jpg");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        margin: 0;
-        font-family: poppins;
-      }
-
-      #main {
-        border-radius: 8px;
-        background-color: rgba(255, 255, 255, 0.8);
-        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 40px;
-        animation: fadeIn 0.5s ease-out;
-        max-width: 500px;
-      }
-      .lo{
-        cursor: pointer;
-        color: rgba(0, 0, 180, 0.887);
-        text-decoration: underline;
-        margin: 0;
-      }
-    </style>
   </head>
   <body>
-    <div id="main">
-      <h1>Under Construction</h1>
-      <a href="../signuppage/signup.html">SignUp</a>
-      <a href="../index.html">LogIn</a>
-      <p id="btn" class="lo">LogOut</p>
+    <label for="fname">First Name:</label>
+    <input id="fname" type="text" /><br />
+
+    <label for="lname">Last Name:</label>
+    <input id="lname" type="text" /><br />
+
+    <label for="faname">Father's Name:</label>
+    <input id="faname" type="text" /><br />
+
+    <label for="email">Email:</label>
+    <input id="email" type="email" /><br />
+
+    <button id="btn">Add</button>
+
+    <!-- Table for displaying user data -->
+    <div id="table">
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Father Name</th>
+            <th>Email</th>
+            <th>Edit</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
     </div>
+
+    <a href="../signuppage/signup.html">Sign Up</a>
+    <a href="../index.html">Log In</a>
+    <a href="#" id="btl" class="lo">Log Out</a>
 
     <script type="module">
       import {
-        auth,
-        createUserWithEmailAndPassword,
-        onAuthStateChanged,
-        signOut
+        auth, db, collection, addDoc,
+        signOut, onAuthStateChanged
       } from "../firebase.js";
-      let button = document.getElementById("btn");
 
-      button.addEventListener("click", function LogOut() {
+      const fName = document.getElementById("fname");
+      const lName = document.getElementById("lname");
+      const faName = document.getElementById("faname");
+      const email = document.getElementById("email");
+      const tableBody = document.getElementById("table-body");
+
+      async function addUser() {
+        if (fName.value && lName.value && faName.value && email.value) {
+          try {
+            const docRef = await addDoc(collection(db, "Users"), {
+              first: fName.value,
+              last: lName.value,
+              father: faName.value,
+              email: email.value
+            });
+            console.log("Document written with ID:", docRef.id);
+
+            appendRow(fName.value, lName.value, faName.value, email.value);
+            clearInputs();
+
+          } catch (e) {
+            console.error("Error adding document:", e);
+            showToast("Error adding user", "error");
+          }
+        } else {
+          showToast("Please fill all fields", "error");
+        }
+      }
+
+      function appendRow(first, last, father, email) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${first}</td>
+          <td>${last}</td>
+          <td>${father}</td>
+          <td>${email}</td>
+          <td><button class="edit-btn">Edit</button></td>
+          <td><button class="del-btn">Delete</button></td>
+        `;
+        tableBody.appendChild(row);
+
+        row.querySelector(".del-btn").addEventListener("click", () => row.remove());
+        row.querySelector(".edit-btn").addEventListener("click", () => editRow(row));
+      }
+
+      function editRow(row) {
+        const newFName = prompt("Edit First Name:", row.cells[0].innerText);
+        const newLName = prompt("Edit Last Name:", row.cells[1].innerText);
+        const newFaName = prompt("Edit Father Name:", row.cells[2].innerText);
+        const newEmail = prompt("Edit Email:", row.cells[3].innerText);
+
+        row.cells[0].innerText = newFName || row.cells[0].innerText;
+        row.cells[1].innerText = newLName || row.cells[1].innerText;
+        row.cells[2].innerText = newFaName || row.cells[2].innerText;
+        row.cells[3].innerText = newEmail || row.cells[3].innerText;
+      }
+
+      function clearInputs() {
+        fName.value = "";
+        lName.value = "";
+        faName.value = "";
+        email.value = "";
+      }
+
+      function showToast(message, type = "success") {
+        Toastify({
+          text: message,
+          duration: 3000,
+          backgroundColor: type === "error" ? "red" : "green"
+        }).showToast();
+      }
+
+      function handleLogout() {
         signOut(auth)
           .then(() => {
-            Toastify({
-              text: 'SignedOut Succesfully',
-              duration: 3000,
-            }).showToast();
+            showToast("Signed Out Successfully");
             onAuthStateChanged(auth, (user) => {
-              if (!user) {
-                window.location.href = '../index.html'
-              }
+              if (!user) window.location.href = "../index.html";
             });
           })
-          .catch((error) => {
-            Toastify({
-              text: error,
-              duration: 3000,
-            }).showToast();
-          });
-      });
+          .catch((error) => showToast(error.message, "error"));
+      }
 
+      document.getElementById("btn").addEventListener("click", addUser);
+      document.getElementById("btl").addEventListener("click", handleLogout);
     </script>
+
     <script src="../firebase.js" type="module"></script>
   </body>
 </html>
